@@ -1,0 +1,106 @@
+services:
+  # Caddy reverse proxy
+  caddy:
+    image: caddy
+    container_name: netbird-caddy
+    restart: unless-stopped
+    networks: [netbird]
+    ports:
+      - '443:443'
+      - '443:443/udp'
+      - '80:80'
+    volumes:
+      - netbird_caddy_data:/data
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500m"
+        max-file: "2"
+
+  # UI dashboard
+  dashboard:
+    image: netbirdio/dashboard:v2.26.0
+    container_name: netbird-dashboard
+    restart: unless-stopped
+    networks: [netbird]
+    env_file:
+      - ./dashboard.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500m"
+        max-file: "2"
+
+  # Signal
+  signal:
+    image: netbirdio/signal:0.62.0
+    container_name: netbird-signal
+    restart: unless-stopped
+    networks: [netbird]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500m"
+        max-file: "2"
+
+  # Relay
+  relay:
+    image: netbirdio/relay:0.62.0
+    container_name: netbird-relay
+    restart: unless-stopped
+    networks: [netbird]
+    env_file:
+      - ./relay.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500m"
+        max-file: "2"
+
+  # Management (includes embedded IdP)
+  management:
+    image: netbirdio/management:0.62.0
+    container_name: netbird-management
+    restart: unless-stopped
+    networks: [netbird]
+    volumes:
+      - netbird_management:/var/lib/netbird
+      - ./management.json:/etc/netbird/management.json
+    command: [
+      "--port", "80",
+      "--log-file", "console",
+      "--log-level", "info",
+      "--disable-anonymous-metrics=false",
+      "--single-account-mode-domain=netbird.selfhosted",
+      "--dns-domain=netbird.selfhosted",
+      "--idp-sign-key-refresh-enabled",
+    ]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500m"
+        max-file: "2"
+
+  # Coturn, AKA TURN server
+  coturn:
+    image: coturn/coturn
+    container_name: netbird-coturn
+    restart: unless-stopped
+    volumes:
+      - ./turnserver.conf:/etc/turnserver.conf:ro
+    network_mode: host
+    command:
+      - -c /etc/turnserver.conf
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "500m"
+        max-file: "2"
+
+volumes:
+  netbird_caddy_data:
+  netbird_management:
+
+networks:
+  netbird:
