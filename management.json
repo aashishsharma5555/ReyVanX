@@ -2,26 +2,26 @@
     "Stuns": [
         {
             "Proto": "udp",
-            "URI": "stun:192.168.0.11:3478"
+            "URI": "stun:20.62.177.218:3478"
         }
     ],
     "Relay": {
-        "Addresses": ["rel://192.168.0.11:80"],
+        "Addresses": ["rel://20.62.177.218:80"],
         "CredentialsTTL": "24h",
         "Secret": "Tb9VNOCOW08uVJIPPtrl/kOhuqNHl8kGMhHK43xe+LA"
     },
     "Signal": {
         "Proto": "http",
-        "URI": "192.168.0.11:80"
+        "URI": "20.62.177.218:80"
     },
     "Datadir": "/var/lib/netbird",
     "DataStoreEncryptionKey": "qzRA7mk7Rv3j1bPxoN+7xhu1TKZwXySkyXwCsPaI9iw=",
     "EmbeddedIdP": {
         "Enabled": true,
-        "Issuer": "http://192.168.0.11/oauth2",
+        "Issuer": "http://20.62.177.218/oauth2",
         "DashboardRedirectURIs": [
-            "http://192.168.0.11/nb-auth",
-            "http://192.168.0.11/nb-silent-auth"
+            "http://20.62.177.218/nb-auth",
+            "http://20.62.177.218/nb-silent-auth"
         ]
     }
 }

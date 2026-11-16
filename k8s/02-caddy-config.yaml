@@ -1,0 +1,32 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: caddy-config
+  namespace: netbird
+data:
+  Caddyfile: |
+    {
+      auto_https off
+    }
+
+    (security_headers) {
+        header * {
+            X-Content-Type-Options "nosniff"
+            X-Frame-Options "SAMEORIGIN"
+            -Server
+            Referrer-Policy strict-origin-when-cross-origin
+        }
+    }
+
+    :80 {
+        import security_headers
+        reverse_proxy /relay* relay:80
+        reverse_proxy /ws-proxy/signal* signal:80
+        reverse_proxy /signalexchange.SignalExchange/* h2c://signal:10000
+        reverse_proxy /api/* management:80
+        reverse_proxy /ws-proxy/management* management:80
+        reverse_proxy /management.ManagementService/* h2c://management:80
+        reverse_proxy /oauth2/* management:80
+        reverse_proxy /* dashboard:80
+    }

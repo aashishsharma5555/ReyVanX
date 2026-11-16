@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: management
+  namespace: netbird
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: management
+  template:
+    metadata:
+      labels:
+        app: management
+    spec:
+      nodeSelector:
+        kubernetes.azure.com/agentpool: agentpool2
+      containers:
+        - name: management
+          image: netbirdio/management:0.62.0
+          args:
+            - --port
+            - "80"
+            - --log-file
+            - console
+            - --log-level
+            - info
+            - --disable-anonymous-metrics=false
+            - --single-account-mode-domain=netbird.selfhosted
+            - --dns-domain=netbird.selfhosted
+            - --idp-sign-key-refresh-enabled
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: management-config
+              mountPath: /etc/netbird/management.json
+              subPath: management.json
+              readOnly: true
+            - name: management-data
+              mountPath: /var/lib/netbird
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          startupProbe:
+            tcpSocket:
+              port: 80
+            periodSeconds: 10
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: 80
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 80
+            periodSeconds: 20
+      volumes:
+        - name: management-config
+          secret:
+            secretName: management-config
+        - name: management-data
+          persistentVolumeClaim:
+            claimName: management-data
